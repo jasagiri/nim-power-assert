@@ -16,7 +16,7 @@ suite "Enhanced Type Support":
       powerAssert simpleT == (10, "world")
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
     
@@ -32,7 +32,7 @@ suite "Enhanced Type Support":
       powerAssert nestedT.point.x == 10
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -49,13 +49,13 @@ suite "Enhanced Type Support":
       powerAssert t["two"] == 3
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
     
     # Table operations
     powerAssert t.len == 3
-    powerAssert t.hasKey("one")
+    powerAssert "one" in t
     
     # Table with tuple values
     var tComplex = initTable[string, (int, string)]()
@@ -66,7 +66,7 @@ suite "Enhanced Type Support":
       powerAssert tComplex["first"] == (2, "one")
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -85,7 +85,7 @@ suite "Enhanced Type Support":
       powerAssert someValue.get == 100
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
     
@@ -96,7 +96,7 @@ suite "Enhanced Type Support":
       powerAssert complexOpt.get.age == 25
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
 
@@ -116,7 +116,7 @@ suite "Enhanced Type Support":
       powerAssert optTuple.get == (x: 10, y: 10)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
     
@@ -131,6 +131,6 @@ suite "Enhanced Type Support":
       powerAssert tSeq["odd"][0] == 2
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true

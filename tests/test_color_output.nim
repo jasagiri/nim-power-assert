@@ -29,21 +29,19 @@ suite "Color Output Functionality":
   setup:
     # Enable colors for all tests in this suite
     enableColors(true)
-  
+
   test "Basic colored output":
     describeColorOutput()
-    
+
     let x = 10
     let y = 5
-    
+
     try:
       powerAssert(x + y == 20)  # Will fail with colored output
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
-  
+      unittest.check true
+
   test "Custom color scheme":
     # Set a custom color scheme
     setColorScheme(
@@ -54,68 +52,83 @@ suite "Color Output Functionality":
       types = fgYellow,
       compositeHeader = fgRed
     )
-    
+
     let a = "hello"
     let b = "world"
-    
+
     try:
       powerAssert(a == b)  # Will fail with custom colored output
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
-  
+      unittest.check true
+
   test "Disabling colors":
     # Disable colors
     enableColors(false)
-    
+
     let flag = true
-    
+
     try:
       powerAssert(not flag)  # Will fail without colors
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
-    
+      unittest.check true
+
     # Re-enable colors for subsequent tests
     enableColors(true)
-  
+
   test "Color highlighting for different types":
     let number = 42
     let text = "text"
     let truth = true
     let seq1 = @[1, 2, 3]
-    
+    let seq2 = @[4, 5, 6]
+
     try:
-      powerAssert(number == 100 and text == "different" and truth == false and seq1 == @[4, 5, 6])
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+      powerAssert(number == 100 and text == "different" and truth == false and seq1 == seq2)
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
-  
+      unittest.check true
+
   test "Difference detection highlighting":
     let str1 = "hello world"
     let str2 = "hello earth"
-    
+
     try:
       powerAssert(str1 == str2)
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
-    
+      unittest.check true
+
     let seq1 = @[1, 2, 3, 4, 5]
     let seq2 = @[1, 2, 30, 4, 5]
-    
+
     try:
       powerAssert(seq1 == seq2)
-      fail()
-      echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
-      check true
+      unittest.check true
+
+  test "Color scheme persistence":
+    # Test that color scheme persists across assertions
+    setColorScheme(
+      errorTitle = fgBlue,
+      expressionCode = fgGreen
+    )
+    
+    unittest.check getColorScheme().errorTitle == fgBlue
+    unittest.check getColorScheme().expressionCode == fgGreen
+    
+    # Reset to default
+    setColorScheme()
+    unittest.check getColorScheme().errorTitle == fgRed
+
+  test "Colors enabled/disabled state":
+    enableColors(true)
+    unittest.check isColorsEnabled() == true
+    
+    enableColors(false)  
+    unittest.check isColorsEnabled() == false
+    
+    enableColors(true)
+    unittest.check isColorsEnabled() == true

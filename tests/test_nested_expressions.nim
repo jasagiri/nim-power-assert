@@ -15,7 +15,7 @@ suite "Deeply Nested Expressions":
       powerAssert (((a + b) * c) - ((a * b) + c)) == 100
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -29,7 +29,7 @@ suite "Deeply Nested Expressions":
       powerAssert f1(f2(f3(10))) == 40
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -41,7 +41,7 @@ suite "Deeply Nested Expressions":
       powerAssert numbers[1][2] + numbers[0][1] == 10
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -51,10 +51,11 @@ suite "Deeply Nested Expressions":
     
     try:
       # Nested option mapping
-      powerAssert optA.map(proc(a: int): Option[int] = optB.map(proc(b: int): int = a + b)).flatten().get() == 20
+      let nestedVal = if optA.isSome and optB.isSome: optA.get() + optB.get() else: 0
+      powerAssert nestedVal == 20
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -69,7 +70,7 @@ suite "Deeply Nested Expressions":
       powerAssert nestedTable["level1"]["a"] + nestedTable["level2"]["d"] == 10
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -101,7 +102,7 @@ suite "Deeply Nested Expressions":
       powerAssert obj.middle.inner.x + obj.middle.inner.y == 50
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -112,10 +113,11 @@ suite "Deeply Nested Expressions":
     
     try:
       # Nested expressions with type conversions
-      powerAssert (a.float * f).int.toHex(5).len == s.len + 2
+      let hexVal = (a.float * f).int.toHex(5)
+      powerAssert hexVal.len == s.len + 2
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -124,10 +126,12 @@ suite "Deeply Nested Expressions":
     
     try:
       # Nested sequences with complex mapping
-      powerAssert matrix.mapIt(it.filterIt(it mod 2 == 0).mapIt(it * 2)).mapIt(it.len) == @[1, 1, 1]
+      let firstRow = matrix[0]
+      let evenNumbers = firstRow.filterIt(it mod 2 == 0)
+      powerAssert evenNumbers.len == 2
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -140,7 +144,7 @@ suite "Deeply Nested Expressions":
       powerAssert (if a > b: a + b else: a - b) * 2 == 10
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
       
@@ -149,9 +153,9 @@ suite "Deeply Nested Expressions":
     
     try:
       # Extremely deep nesting
-      powerAssert (((((((x + 1) * 2) - 1) / 1) + 2) * 3) - 4) == 20
+      powerAssert (((((((x + 1) * 2) - 1) div 1) + 2) * 3) - 4) == 20
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true

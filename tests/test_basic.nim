@@ -15,7 +15,7 @@ suite "Basic PowerAssert Tests":
   test "Require template":
     # Testing the require template
     let value = 10
-    require(value > 0)
+    unittest.require(value > 0)
     powerAssert(value * 2 == 20)
     
   test "Assertion with custom messages":
@@ -28,7 +28,7 @@ suite "Basic PowerAssert Tests":
     
     powerAssert(numbers.len == 5)
     powerAssert(numbers[0] == 1)
-    powerAssert(numbers[^1] == 5)
+    powerAssert(numbers[numbers.len - 1] == 5)
     
   test "Different types in assertions":
     let intVal = 10
@@ -64,10 +64,10 @@ suite "Failed Assertions":
       let x = 5
       let y = 10
       powerAssert(x + x == y + 1)
-      check false # Should not reach here
-    except AssertionDefect:
+      unittest.check false # Should not reach here
+    except PowerAssertDefect:
       # This is expected
-      check true
+      unittest.check true
       
   test "Multiple operations in failing assertion":
     try:
@@ -75,17 +75,17 @@ suite "Failed Assertions":
       let b = 3
       let c = 4
       powerAssert((a + b) * c == 21)
-      check false # Should not reach here
-    except AssertionDefect:
+      unittest.check false # Should not reach here
+    except PowerAssertDefect:
       # This is expected
-      check true
+      unittest.check true
       
   test "Function calls in failing assertion":
     try:
       proc double(x: int): int = x * 2
       let x = 5
       powerAssert(double(x) == 11)
-      check false # Should not reach here
-    except AssertionDefect:
+      unittest.check false # Should not reach here
+    except PowerAssertDefect:
       # This is expected
-      check true
+      unittest.check true

@@ -1,5 +1,6 @@
 import macros
 import strutils, strformat, typetraits, algorithm
+import terminal
 from tables import Table, initTable, `[]`, `[]=`, pairs
 
 type
@@ -31,11 +32,29 @@ type
   
   # カスタムフォーマッター用の型定義
   FormatRenderer* = proc(exprStr: string, capturedValues: CapturedValues): string {.nimcall.}
+  
+  # カラー設定
+  ColorScheme* = object
+    errorTitle*: ForegroundColor
+    expressionCode*: ForegroundColor
+    indicator*: ForegroundColor
+    values*: ForegroundColor
+    types*: ForegroundColor
+    compositeHeader*: ForegroundColor
 
 var
   currentFormat* = PowerAssertJS  # デフォルトフォーマット
   globalStats* = TestStats()      # グローバル統計
   customRenderer*: FormatRenderer = nil  # カスタムフォーマッター
+  colorsEnabled* = false  # カラー出力のフラグ
+  colorScheme* = ColorScheme(
+    errorTitle: fgRed,
+    expressionCode: fgWhite,
+    indicator: fgCyan,
+    values: fgYellow,
+    types: fgGreen,
+    compositeHeader: fgMagenta
+  )
 
 proc splitCondition(cond: NimNode): tuple[left, right: NimNode, op: string] =
   ## 条件式を左辺と右辺に分割する
@@ -179,7 +198,8 @@ proc renderDetailed(exprStr: string, capturedValues: CapturedValues): string =
   result = "PowerAssert Failure Details:\n"
   result.add("═".repeat(50) & "\n")
   result.add(fmt"Expression: {exprStr}\n")
-  result.add("Variables:\n")
+  result.add("Result: false\n")
+  result.add("Values:\n")
   for expr, value in capturedValues.pairs:
     if expr != exprStr:
       result.add(fmt"  {expr:<20} = {value}\n")
@@ -202,15 +222,16 @@ proc renderClassic(exprStr: string, capturedValues: CapturedValues): string =
   
   result.add("\n" & exprStr & "\n")
   
-  var pointers = " ".repeat(exprStr.len)
+  var pointers = newSeq[char](exprStr.len)
+  for i in 0..<exprStr.len:
+    pointers[i] = ' '
+  
   for expr in exprValues:
-    if expr.expr != exprStr and expr.expr.len > 1:
+    if expr.expr != exprStr and expr.expr.len <= 1:
       if expr.startPos >= 0 and expr.startPos < pointers.len:
         pointers[expr.startPos] = '^'
-      if expr.endPos >= 0 and expr.endPos < pointers.len:
-        pointers[expr.endPos] = '^'
   
-  result.add(pointers & "\n")
+  result.add(pointers.join("") & "\n")
 
 # メインのレンダリング関数
 proc renderExpression(exprStr: string, capturedValues: CapturedValues): string =
@@ -229,91 +250,6 @@ proc renderExpression(exprStr: string, capturedValues: CapturedValues): string =
     else:
       return renderPowerAssertJS(exprStr, capturedValues)  # フォールバック
 
-# Move comparison procedures outside the macro to avoid duplication
-proc compareBool(a, b: bool, op: string): bool =
-  case op
-  of "==": system.`==`(a, b)
-  of "!=": system.`!=`(a, b)
-  else: false
-
-proc compareInt(a, b: int64, op: string): bool =
-  case op
-  of "==": system.`==`(a, b)
-  of "!=": system.`!=`(a, b)
-  of "<": system.`<`(a, b)
-  of "<=": system.`<=`(a, b)
-  of ">": system.`>`(a, b)
-  of ">=": system.`>=`(a, b)
-  else: false
-
-proc compareValues*[T,U](a: T, b: U, op: string): bool =
-  if op == "bool":
-    when T is bool:
-      return a  # For simple boolean expressions
-    else:
-      return false  # Should not happen in practice
-  when T is bool and U is bool:
-    if op == "and":
-      return system.`and`(a, b)
-    elif op == "or":
-      return system.`or`(a, b)
-    else:
-      return compareBool(a, b, op)
-  when T is SomeInteger and U is SomeInteger:
-    return compareInt(a.int64, b.int64, op)
-  when T is SomeFloat and U is SomeFloat:
-    let x = a.float64
-    let y = b.float64
-    return case op
-    of "==": system.eq(x, y)
-    of "!=": not system.eq(x, y)
-    of "<": system.`<`(x, y)
-    of "<=": system.`<=`(x, y)
-    of ">": system.`>`(x, y)
-    of ">=": system.`>=`(x, y)
-    else: false
-  when T is string and U is string:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  when T is char and U is char:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  when T is ref and U is ref:
-    return case op
-    of "==": system.`==`(cast[pointer](a), cast[pointer](b))
-    of "!=": system.`!=`(cast[pointer](a), cast[pointer](b))
-    else: false
-  when T is ptr and U is ptr:
-    return case op
-    of "==": system.`==`(cast[pointer](a), cast[pointer](b))
-    of "!=": system.`!=`(cast[pointer](a), cast[pointer](b))
-    else: false
-  when T is seq and U is seq:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  when T is array and U is array:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  when T is object and U is object:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  when T is tuple and U is tuple:
-    return case op
-    of "==": system.`==`(a, b)
-    of "!=": system.`!=`(a, b)
-    else: false
-  else:
-    return false
 
 macro powerAssert*(condition: untyped, message: string = ""): untyped =
   let conditionStr = condition.repr
@@ -359,14 +295,11 @@ macro powerAssert*(condition: untyped, message: string = ""): untyped =
       result = node
 
   let instrumentedCond = instrumentExpr(condition)
-  let (left, right, op) = splitCondition(condition)
 
   stmts.add(quote do:
     let cond = `instrumentedCond`
-    let leftVal = `left`
-    let rightVal = `right`
     
-    if not compareValues(leftVal, rightVal, `op`):
+    if not cond:
       var errorMsg = "PowerAssert: Assertion failed\n\n"
       errorMsg.add(renderExpression(`conditionStr`, `valuesTable`))
       if `message`.len > 0:
@@ -465,6 +398,35 @@ template skipTest*(reason: string = "") =
   ## テストをスキップ
   recordSkipped()
   echo "SKIPPED: " & reason
+
+# カラー関連のAPI
+proc enableColors*(enable: bool) =
+  ## カラー出力を有効/無効にする
+  colorsEnabled = enable
+
+proc isColorsEnabled*(): bool =
+  ## カラー出力が有効かどうかを返す
+  return colorsEnabled
+
+proc setColorScheme*(errorTitle: ForegroundColor = fgRed,
+                     expressionCode: ForegroundColor = fgWhite,
+                     indicator: ForegroundColor = fgCyan,
+                     values: ForegroundColor = fgYellow,
+                     types: ForegroundColor = fgGreen,
+                     compositeHeader: ForegroundColor = fgMagenta) =
+  ## カラースキームを設定する
+  colorScheme = ColorScheme(
+    errorTitle: errorTitle,
+    expressionCode: expressionCode,
+    indicator: indicator,
+    values: values,
+    types: types,
+    compositeHeader: compositeHeader
+  )
+
+proc getColorScheme*(): ColorScheme =
+  ## 現在のカラースキームを取得する
+  return colorScheme
 
 # カスタムフォーマッター用のヘルパー関数
 iterator capturedPairs*(values: CapturedValues): tuple[key, val: string] =

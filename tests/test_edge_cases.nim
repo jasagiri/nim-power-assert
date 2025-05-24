@@ -15,7 +15,7 @@ suite "Edge Cases":
       powerAssert(emptySeq.len > 0)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -39,7 +39,7 @@ suite "Edge Cases":
       powerAssert(n1.next.next.next.value == 5)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -52,7 +52,7 @@ suite "Edge Cases":
       powerAssert(largeNum1 == largeNum2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -65,7 +65,7 @@ suite "Edge Cases":
       powerAssert(str1 == str2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -78,7 +78,7 @@ suite "Edge Cases":
       powerAssert(longStr1 == longStr2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -93,7 +93,7 @@ suite "Edge Cases":
       powerAssert(intVal.float + floatVal == uint8Val.float + 0.5)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -106,7 +106,7 @@ suite "Edge Cases":
       powerAssert(date1 == date2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -119,7 +119,7 @@ suite "Edge Cases":
       powerAssert(json1 == json2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -132,7 +132,7 @@ suite "Edge Cases":
       powerAssert(optEmpty.isSome and emptyStr.len > 0)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -152,7 +152,7 @@ suite "Edge Cases":
       powerAssert(f1(f2(f3(flag))).int.`$`.len == 10)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -174,7 +174,7 @@ suite "Edge Cases":
       powerAssert(multiline1 == multiline2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -187,7 +187,7 @@ suite "Edge Cases":
       powerAssert(fileExists(nonExistentFile))
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Should fail on the file exists check
       check true
   
@@ -204,7 +204,7 @@ suite "Edge Cases":
       powerAssert(b != 0)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Should fail at the condition
       check true
   
@@ -225,7 +225,7 @@ suite "Edge Cases":
       powerAssert(obj1 == obj2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -241,7 +241,7 @@ suite "Edge Cases":
       powerAssert((a < b and b < c) or (s1.len > s2.len and a == b) xor (c mod a == 0 and s1 & s2 == "helloworld"))
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -250,10 +250,10 @@ suite "Edge Cases":
     
     try:
       # Test with empty table
-      powerAssert(emptyTable.len > 0 and emptyTable.hasKey("test"))
+      powerAssert(emptyTable.len > 0 and "test" in emptyTable)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -270,7 +270,7 @@ suite "Edge Cases":
       powerAssert(color1 == color2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -283,7 +283,7 @@ suite "Edge Cases":
       powerAssert(tuple1 == tuple2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true
   
@@ -296,6 +296,6 @@ suite "Edge Cases":
       powerAssert(set1 == set2)
       fail()
       echo "Assertion should have failed"
-    except AssertionDefect:
+    except PowerAssertDefect:
       # Expected to fail, so this is correct
       check true

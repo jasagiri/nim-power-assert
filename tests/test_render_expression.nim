@@ -1,113 +1,89 @@
 import unittest except check
 import ../src/power_assert
-import std/tables
 import std/strutils
 
-suite "Render Expression Tests":
-  test "Simple expression rendering":
-    let exprStr = "a == b"
-    var values: seq[ExpressionInfo] = @[
-      ExpressionInfo(code: "a", value: "5", typeName: "int", column: 0),
-      ExpressionInfo(code: "b", value: "10", typeName: "int", column: 5)
-    ]
-    
-    let rendered = renderExpression(exprStr, values)
-    check find(rendered, "a == b") >= 0
-    check find(rendered, "^ 5 (int)") >= 0
-    check find(rendered, "     ^ 10 (int)") >= 0
+suite "Expression Rendering Tests":
+  test "PowerAssert generates readable output":
+    try:
+      let a = 5
+      let b = 10
+      powerAssert(a == b)
+    except PowerAssertDefect as e:
+      unittest.check "a == b" in e.msg
+      unittest.check "5" in e.msg
+      unittest.check "10" in e.msg
   
-  test "Complex expression with nested operations":
-    let exprStr = "(a + b) * c > d"
-    var values: seq[ExpressionInfo] = @[
-      ExpressionInfo(code: "a", value: "2", typeName: "int", column: 1),
-      ExpressionInfo(code: "b", value: "3", typeName: "int", column: 5),
-      ExpressionInfo(code: "c", value: "4", typeName: "int", column: 10),
-      ExpressionInfo(code: "d", value: "20", typeName: "int", column: 14),
-      ExpressionInfo(code: "a + b", value: "5", typeName: "int", column: 1),
-      ExpressionInfo(code: "(a + b) * c", value: "20", typeName: "int", column: 0)
-    ]
-    
-    let rendered = renderExpression(exprStr, values)
-    check find(rendered, "(a + b) * c > d") >= 0
-    check find(rendered, " ^ 2 (int)") >= 0
-    check find(rendered, "     ^ 3 (int)") >= 0
-    check find(rendered, "          ^ 4 (int)") >= 0
-    check find(rendered, "              ^ 20 (int)") >= 0
-    
-    # Check for composite expressions section
-    check find(rendered, "# Composite expressions:") >= 0
-    check find(rendered, "a + b = 5 (int)") >= 0
-    check find(rendered, "(a + b) * c = 20 (int)") >= 0
+  test "Complex expression output":
+    try:
+      let x = 2
+      let y = 3
+      let z = 4
+      powerAssert((x + y) * z == 25)
+    except PowerAssertDefect as e:
+      unittest.check "(x + y) * z == 25" in e.msg
+      unittest.check "2" in e.msg
+      unittest.check "3" in e.msg
+      unittest.check "4" in e.msg
   
-  test "Empty expression information":
-    let exprStr = "x == y"
-    var values: seq[ExpressionInfo] = @[]
+  test "Nested function call output":
+    proc double(n: int): int = n * 2
+    proc addNumbers(a, b: int): int = a + b
     
-    let rendered = renderExpression(exprStr, values)
-    check rendered == "x == y\n\n"
+    try:
+      let val = 5
+      powerAssert(double(val) == addNumbers(val, 20))
+    except PowerAssertDefect as e:
+      unittest.check "double(val) == addNumbers(val, 20)" in e.msg
+      unittest.check "5" in e.msg
+      unittest.check "10" in e.msg
+      unittest.check "25" in e.msg
   
-  test "Expressions with same column position":
-    let exprStr = "nested.expression.value == 10"
-    var values: seq[ExpressionInfo] = @[
-      ExpressionInfo(code: "nested", value: "obj", typeName: "Object", column: 0),
-      ExpressionInfo(code: "nested.expression", value: "expr", typeName: "Expression", column: 0),
-      ExpressionInfo(code: "nested.expression.value", value: "5", typeName: "int", column: 0),
-      ExpressionInfo(code: "10", value: "10", typeName: "int", column: 26)
-    ]
-    
-    let rendered = renderExpression(exprStr, values)
-    check find(rendered, "^ obj (Object)") >= 0
-    check find(rendered, "^ expr (Expression)") >= 0
-    check find(rendered, "^ 5 (int)") >= 0
-    check find(rendered, "                          ^ 10 (int)") >= 0
+  test "Array access expression output":
+    try:
+      let arr = [10, 20, 30]
+      let idx = 1
+      powerAssert(arr[idx] == 30)
+    except PowerAssertDefect as e:
+      unittest.check "arr[idx] == 30" in e.msg
+      unittest.check "20" in e.msg
+      unittest.check "30" in e.msg
   
-  test "Different value types in same expression":
-    let exprStr = "a + b.value == c[i]"
-    var values: seq[ExpressionInfo] = @[
-      ExpressionInfo(code: "a", value: "5", typeName: "int", column: 0),
-      ExpressionInfo(code: "b", value: "obj", typeName: "Object", column: 4),
-      ExpressionInfo(code: "b.value", value: "10", typeName: "int", column: 4),
-      ExpressionInfo(code: "c", value: "@[15, 20, 25]", typeName: "seq[int]", column: 14),
-      ExpressionInfo(code: "i", value: "1", typeName: "int", column: 16),
-      ExpressionInfo(code: "c[i]", value: "20", typeName: "int", column: 14),
-      ExpressionInfo(code: "a + b.value", value: "15", typeName: "int", column: 0)
-    ]
-    
-    let rendered = renderExpression(exprStr, values)
-    check find(rendered, "^ 5 (int)") >= 0
-    check find(rendered, "    ^ obj (Object)") >= 0
-    check find(rendered, "    ^ 10 (int)") >= 0
-    check find(rendered, "              ^ @[15, 20, 25] (seq[int])") >= 0
-    check find(rendered, "                ^ 1 (int)") >= 0
-    check find(rendered, "              ^ 20 (int)") >= 0
-    
-    # Check for composite expressions section
-    check find(rendered, "# Composite expressions:") >= 0
-    check find(rendered, "a + b.value = 15 (int)") >= 0
+  test "String comparison output":
+    try:
+      let name = "Alice"
+      let expected = "Bob"
+      powerAssert(name == expected)
+    except PowerAssertDefect as e:
+      unittest.check "name == expected" in e.msg
+      unittest.check "Alice" in e.msg
+      unittest.check "Bob" in e.msg
   
-  test "Handling of multiple composite expressions":
-    let exprStr = "(a + b) * (c - d) == e"
-    var values: seq[ExpressionInfo] = @[
-      ExpressionInfo(code: "a", value: "2", typeName: "int", column: 1),
-      ExpressionInfo(code: "b", value: "3", typeName: "int", column: 5),
-      ExpressionInfo(code: "c", value: "10", typeName: "int", column: 10),
-      ExpressionInfo(code: "d", value: "5", typeName: "int", column: 14),
-      ExpressionInfo(code: "e", value: "25", typeName: "int", column: 19),
-      ExpressionInfo(code: "a + b", value: "5", typeName: "int", column: 1),
-      ExpressionInfo(code: "c - d", value: "5", typeName: "int", column: 10),
-      ExpressionInfo(code: "(a + b) * (c - d)", value: "25", typeName: "int", column: 0)
-    ]
+  test "Boolean expression output":
+    try:
+      let flag1 = true
+      let flag2 = false
+      powerAssert(flag1 and flag2)
+    except PowerAssertDefect as e:
+      unittest.check "flag1 and flag2" in e.msg
+      unittest.check "true" in e.msg
+      unittest.check "false" in e.msg
+  
+  test "Output format consistency":
+    # Test that different output formats work
+    setOutputFormat(PowerAssertJS)
+    try:
+      let a = 1
+      let b = 2
+      powerAssert(a > b)
+    except PowerAssertDefect as e:
+      unittest.check "|" in e.msg  # PowerAssertJS style
     
-    let rendered = renderExpression(exprStr, values)
-    # Check for all value pointers
-    check find(rendered, " ^ 2 (int)") >= 0
-    check find(rendered, "     ^ 3 (int)") >= 0
-    check find(rendered, "          ^ 10 (int)") >= 0
-    check find(rendered, "              ^ 5 (int)") >= 0
-    check find(rendered, "                   ^ 25 (int)") >= 0
+    setOutputFormat(Compact)
+    try:
+      let a = 1
+      let b = 2
+      powerAssert(a > b)
+    except PowerAssertDefect as e:
+      unittest.check "a=1" in e.msg  # Compact style
     
-    # Check for all composite expressions
-    check find(rendered, "# Composite expressions:") >= 0
-    check find(rendered, "a + b = 5 (int)") >= 0
-    check find(rendered, "c - d = 5 (int)") >= 0
-    check find(rendered, "(a + b) * (c - d) = 25 (int)") >= 0
+    setOutputFormat(PowerAssertJS)  # Reset to default

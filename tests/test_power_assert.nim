@@ -8,30 +8,35 @@ suite "PowerAssert Basic Functionality":
     let a = 10
     let b = 5
     
-    powerAssert true  # Most basic test
-    # check a + b == 15  # Also verify with standard assert
+    powerAssert a + b == 15
+    powerAssert a - b == 5
+    powerAssert a * 2 == 20
+    powerAssert b != 0
     
   test "Comparison operators":
     let x = 5
     let y = 10
     
-    powerAssert true  # Simple boolean test
-    # check x < y  # Also verify with standard assert
+    powerAssert x < y
+    powerAssert y > x
+    powerAssert x <= 5
+    powerAssert y >= 10
       
   test "Logical expressions":
     let flag1 = true
     let flag2 = false
     
-    # powerAssert flag1 or flag2  # TODO: Fix operator ambiguity for logical operators
-    # check flag1 or flag2  # TODO: Fix operator ambiguity
-    system.doAssert flag1 or flag2  # Standard assert works
+    powerAssert flag1 or flag2
+    powerAssert flag1 and not flag2
+    powerAssert not (flag1 and flag2)
+    powerAssert flag1 xor flag2
       
   test "Custom messages":
     let val = 42
     
-    # powerAssert val != 0, "Value must be positive"  # TODO: Fix comparison operator issues
-    # check val > 0  # TODO: Fix comparison operator issues
-    powerAssert true, "Simple test with message"
+    powerAssert val > 0, "Value must be positive"
+    powerAssert val != 0, "Value must not be zero"
+    powerAssert val == 42, "Value should be 42"
 
 suite "Complex Expressions":
   test "Nested expressions":
@@ -39,33 +44,32 @@ suite "Complex Expressions":
     let b = 7
     let c = 9
     
-    # powerAssert (a + b) * c == 108  # TODO: Fix == operator issues
-    # check (a + b) * c == 108  # TODO: Fix == operator issues
-    powerAssert true  # Simple placeholder
+    powerAssert (a + b) * c == 108
+    powerAssert a * (b + c) == 80
+    powerAssert (a + b) * (c - 1) == 96
       
   test "Function calls":
     proc double(x: int): int = x * 2
     proc isEven(x: int): bool = (x mod 2) == 0
     
     let x = 5
-    let doubled = double(x)
     
-    # Evaluate the entire expression with powerAssert
-    powerAssert isEven(doubled)  # Expected to succeed
-    # check isEven(doubled)  # TODO: Fix duplicate procedure generation
+    powerAssert double(x) == 10
+    powerAssert isEven(double(x))
+    powerAssert not isEven(x)
     
   test "String manipulation":
     let greeting = "Hello"
     let name = "World"
     
-    # powerAssert greeting & " " & name == "Hello World"  # TODO: Fix == operator
-    powerAssert true  # Placeholder
+    powerAssert greeting & " " & name == "Hello World"
+    powerAssert greeting.len == 5
+    powerAssert name[0] == 'W'
     
   test "Collection operations":
     let numbers = @[1, 2, 3, 4, 5]
     
-    # powerAssert numbers.len == 5  # TODO: Fix == operator
-    # powerAssert numbers[2] == 3  # TODO: Fix == operator
-    # powerAssert 3 in numbers  # TODO: Fix 'in' operator
-    # powerAssert numbers.contains(4)  # TODO: Fix method call instrumentation
-    powerAssert true  # Simple placeholder
+    powerAssert numbers.len == 5
+    powerAssert numbers[2] == 3
+    powerAssert 3 in numbers
+    powerAssert 6 notin numbers

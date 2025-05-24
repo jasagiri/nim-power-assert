@@ -22,7 +22,7 @@ suite "Error Handling Tests":
     
     try:
       # Try to access an out-of-bounds index
-      var arr = [1, 2, 3]
+      var arr = @[1, 2, 3]
       powerAssert(arr[10] == 0, "This should raise an IndexDefect")
       check(false) # This should not be reached
     except IndexDefect:
@@ -44,10 +44,10 @@ suite "Error Handling Tests":
     except PowerAssertDefect as e:
       # Check that the message contains key details
       let msg = e.msg
-      errorContainsDetails = find(msg, "PowerAssert") >= 0 and 
-                           find(msg, "10") >= 0 and 
-                           find(msg, "20") >= 0 and
-                           find(msg, "Values should be equal") >= 0
+      errorContainsDetails = "PowerAssert" in msg and 
+                           "10" in msg and 
+                           "20" in msg and
+                           "Values should be equal" in msg
     
     check(errorContainsDetails)
   
@@ -58,28 +58,28 @@ suite "Error Handling Tests":
     try:
       power_assert.assert(1 == 2)
       check(false) # This should not be reached
-    except AssertionDefect:
+    except PowerAssertDefect:
       failures += 1
     
     # Test doAssert template
     try:
       power_assert.doAssert(1 == 2)
       check(false) # This should not be reached 
-    except AssertionDefect:
+    except PowerAssertDefect:
       failures += 1
     
     # Test require template
     try:
       power_assert.require(1 == 2)
       check(false) # This should not be reached
-    except AssertionDefect:
+    except PowerAssertDefect:
       failures += 1
     
     # Test powerCheck template
     try:
       power_assert.powerCheck(1 == 2)
       check(false) # This should not be reached
-    except AssertionDefect:
+    except PowerAssertDefect:
       failures += 1
     
     # All 4 templates should have failed

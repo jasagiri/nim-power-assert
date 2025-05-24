@@ -91,6 +91,77 @@ task test, "Run tests":
       echo "Running test: tests/" & testFile
       exec "nim c -r -o:build/tests/" & outFile & " tests/" & testFile
 
+# Individual test tasks
+task test_basic, "Run basic tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_basic.nim"
+  exec "nim c -r -o:build/tests/test_basic tests/test_basic.nim"
+
+task test_edge_cases, "Run edge cases tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_edge_cases.nim"
+  exec "nim c -r -o:build/tests/test_edge_cases tests/test_edge_cases.nim"
+
+task test_enhanced_types, "Run enhanced types tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_enhanced_types.nim"
+  exec "nim c -r -o:build/tests/test_enhanced_types tests/test_enhanced_types.nim"
+
+task test_nested_expressions, "Run nested expressions tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_nested_expressions.nim"
+  exec "nim c -r -o:build/tests/test_nested_expressions tests/test_nested_expressions.nim"
+
+task test_coverage, "Run coverage tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_coverage.nim"
+  exec "nim c -r -o:build/tests/test_coverage tests/test_coverage.nim"
+
+task test_error_handling, "Run error handling tests":
+  exec "mkdir -p build/tests"
+  echo "Running test: tests/test_error_handling.nim"
+  exec "nim c -r -o:build/tests/test_error_handling tests/test_error_handling.nim"
+
+task test_all, "Run all individual test files":
+  exec "mkdir -p build/tests"
+  let testFiles = [
+    "test_basic.nim",
+    "test_edge_cases.nim",
+    "test_enhanced_types.nim",
+    "test_nested_expressions.nim",
+    "test_coverage.nim",
+    "test_error_handling.nim",
+    "test_power_assert.nim",
+    "test_operators.nim",
+    "test_custom_types.nim",
+    "test_color_output.nim",
+    "test_output_formats.nim",
+    "test_statistics.nim",
+    "test_unittest_integration.nim",
+    "test_configuration.nim"
+  ]
+  
+  var passed = 0
+  var failed = 0
+  
+  for testFile in testFiles:
+    echo "\n========================================="
+    echo "Running test: " & testFile
+    echo "========================================="
+    try:
+      exec "nim c -r -o:build/tests/" & testFile.replace(".nim", "") & " tests/" & testFile
+      passed += 1
+    except:
+      echo "❌ Test failed: " & testFile
+      failed += 1
+  
+  echo "\n========================================="
+  echo "Test Summary:"
+  echo "  ✅ Passed: " & $passed
+  echo "  ❌ Failed: " & $failed
+  echo "  📊 Total:  " & $(passed + failed)
+  echo "========================================="
+
 task clean, "Clean build artifacts":
   # ビルド成果物を管理するための安全で賢いクリーンアップタスク
   # ドキュメントファイルは保持し、他のビルド成果物を選択的に削除する方式
